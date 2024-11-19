@@ -65,7 +65,7 @@ class CameraWorldConvertor:
         vec_world = self.transform_to_world_matrix @ vector - \
             self.transform_to_world_matrix @ np.array([0, 0, 0, 1]).T
 
-        return (vec_world, point)
+        return (vec_world, self.CAMERA_POS)
 
 
 if __name__ == "__main__":
@@ -77,3 +77,4 @@ if __name__ == "__main__":
     line = conventor.transform_point_to_world_coord(conventor.transform_point_to_img_coord(
         np.array(np.array([551.38, 383.84, 8.03, 1]).T)))
     print(line)
+    
