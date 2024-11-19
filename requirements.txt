@@ -6,3 +6,7 @@ scipy
 plotly
 matplotlib
 openpyxl
+torch
+torchvision
+imageio
+streamlit-image-coordinates

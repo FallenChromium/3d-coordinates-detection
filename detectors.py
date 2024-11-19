@@ -39,3 +39,4 @@ class BlobDetector(DetectionAlgorithm):
             confidence = keypoints[0].size / 100  # Normalize size to confidence
             return Detection(position, confidence, camera.id)
         return None
+

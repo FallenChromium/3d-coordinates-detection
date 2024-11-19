@@ -10,6 +10,8 @@ import cv2
 import numpy as np
 import pandas as pd
 
+from utils import fuse_rgb_ir
+
 
 @dataclass
 class CameraParams:
@@ -31,33 +33,35 @@ class CameraParams:
 class SimulationEnvironment:
     def __init__(
         self,
-        ground_truth_data: pd.DataFrame,
         cameras: List[CameraParams],
         object_diameter: float,
+        ground_truth_data: pd.DataFrame | None = None,
+        folder_prefix: str = "./data/step1/videoset1",
     ):
         self.ground_truth: pd.DataFrame | None = ground_truth_data
         self.cameras: List[CameraParams] = cameras
         self.current_timestamp = 0
         self.sphere_diameter = object_diameter  # from settings
-        self.captures: list[cv2.VideoCapture] = []
+        self.captures: list[dict[str, cv2.VideoCapture]] = [{"rgb": cv2.VideoCapture(f"{folder_prefix}/Seq{folder_prefix[-1]}_{camera.id}.mov"),
+                                                             "ir": cv2.VideoCapture(f"{folder_prefix}/Seq{folder_prefix[-1]}_{camera.id}T.mov")}
+                                                            for camera in cameras]
 
-    def get_camera_views(self) -> List[cv2.typing.MatLike]:
+    def get_camera_views(self) -> List[dict[str, List[cv2.typing.MatLike]]]:
         """Generate simulated camera views based on ground truth position"""
         # current_pos = self.ground_truth.loc[self.current_timestamp][
         #     ["X,m", "Y,m", "Z,m"]
         # ].values
         views = []
-        videos_prefix = "./data/step1/videoset1/"
-        if len(self.captures) == 0:
-            for camera in self.cameras:
-                capture = cv2.VideoCapture(os.path.join(videos_prefix, f"Seq1_{camera.id}.mov"))
-                self.captures.append(capture)
         for cap in self.captures:
-            fps = cap.get(cv2.CAP_PROP_FPS)
+            fps = cap["rgb"].get(cv2.CAP_PROP_FPS)
             frame_number = floor(self.current_timestamp * fps)
-            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number)
-            ret, frame = cap.read()
-            views.append(frame)
+            cap["rgb"].set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+            cap["ir"].set(cv2.CAP_PROP_POS_FRAMES, frame_number)
+            ret, frame_rgb = cap["rgb"].read()
+            ret, frame_ir = cap["ir"].read()
+            frame = fuse_rgb_ir(frame_rgb, frame_ir)
+            views.append({"fused": frame, "rgb": frame_rgb, "ir": frame_ir})
+
 
         return views
 
