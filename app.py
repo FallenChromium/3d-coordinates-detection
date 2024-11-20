@@ -25,7 +25,6 @@ elif torch.backends.mps.is_available():
     device = torch.device("mps")
 else:
     device = torch.device("cpu")
-print(f"using device: {device}")
 
 if device.type == "cuda":
     # use bfloat16 for the entire notebook
@@ -83,9 +82,9 @@ def main():
     st.title("3D Object Tracking Simulation")
     # streamlit tabs for each Seq of /data/videoset{1..8}/Seq[Number]_settings
     # Load data
-    folder_prefix = "./data/step1/videoset1"
+    folder_prefix = "./data/step1/videoset0"
     ground_truth_data = pd.read_csv(
-        os.path.join(folder_prefix, "Seq1_settings.csv"), sep=",", header=0, index_col=0
+        os.path.join(folder_prefix, "Seq0_settings.csv"), sep=",", header=0, index_col=0
     )
 
     # Algorithm selection
@@ -104,9 +103,12 @@ def main():
     )
 
     if st.session_state.get("simulation") is None:
-        st.session_state.update({"viewport_points": [{"x":503,"y":643,"width":1920,"height":1080,"unix_time":1732058105667,"camera":"camera1","frame_idx":183},{"x":491,"y":684,"width":1920,"height":1080,"unix_time":1732058114662,"camera":"camera2","frame_idx":183},{"x":279,"y":743,"width":1920,"height":1080,"unix_time":1732058128106,"camera":"camera3","frame_idx":183},{"x":451,"y":892,"width":1920,"height":1080,"unix_time":1732072682787,"camera":"camera2","frame_idx":16},{"x":238,"y":884,"width":1920,"height":1080,"unix_time":1732072703541,"camera":"camera1","frame_idx":18},{"x":237,"y":883,"width":1920,"height":1080,"unix_time":1732072715264,"camera":"camera1","frame_idx":20},{"x":235,"y":879,"width":1920,"height":1080,"unix_time":1732072727636,"camera":"camera1","frame_idx":22},{"x":499,"y":722,"width":1920,"height":1080,"unix_time":1732072754469,"camera":"camera3","frame_idx":135}]})
+        # seq1 points
+        # st.session_state.update({"viewport_points": [{"x":503,"y":643,"width":1920,"height":1080,"unix_time":1732058105667,"camera":"camera1","frame_idx":183},{"x":491,"y":684,"width":1920,"height":1080,"unix_time":1732058114662,"camera":"camera2","frame_idx":183},{"x":279,"y":743,"width":1920,"height":1080,"unix_time":1732058128106,"camera":"camera3","frame_idx":183},{"x":451,"y":892,"width":1920,"height":1080,"unix_time":1732072682787,"camera":"camera2","frame_idx":16},{"x":238,"y":884,"width":1920,"height":1080,"unix_time":1732072703541,"camera":"camera1","frame_idx":18},{"x":237,"y":883,"width":1920,"height":1080,"unix_time":1732072715264,"camera":"camera1","frame_idx":20},{"x":235,"y":879,"width":1920,"height":1080,"unix_time":1732072727636,"camera":"camera1","frame_idx":22},{"x":499,"y":722,"width":1920,"height":1080,"unix_time":1732072754469,"camera":"camera3","frame_idx":135}]})
+        # st.session_state.update({"viewport_points": []})
+        st.session_state.update({"viewport_points": [{"x":498,"y":961,"width":1920,"height":1080,"unix_time":1732077535015,"camera":"camera1","frame_idx":"146"},{"x":885,"y":855,"width":1920,"height":1080,"unix_time":1732077588342,"camera":"camera3","frame_idx":"185"},{"x":523,"y":671,"width":1920,"height":1080,"unix_time":1732077610761,"camera":"camera2","frame_idx":"185"},{"x":1061,"y":572,"width":1920,"height":1080,"unix_time":1732077697102,"camera":"camera1","frame_idx":"500"},{"x":1044,"y":484,"width":1920,"height":1080,"unix_time":1732077712486,"camera":"camera2","frame_idx":"500"},{"x":1201,"y":880,"width":1920,"height":1080,"unix_time":1732077732209,"camera":"camera1","frame_idx":"1000"},{"x":1510,"y":656,"width":1920,"height":1080,"unix_time":1732077774707,"camera":"camera2","frame_idx":"1200"},{"x":1533,"y":759,"width":1920,"height":1080,"unix_time":1732077794075,"camera":"camera1","frame_idx":"1182"},{"x":1285,"y":812,"width":1920,"height":1080,"unix_time":1732077813991,"camera":"camera3","frame_idx":"1425"}]})
         settings_data = json.load(
-            open(os.path.join(folder_prefix, "Seq1_settings.json"))
+            open(os.path.join(folder_prefix, "Seq0_settings.json"))
         )
         cameras = [
             CameraParams(
@@ -132,7 +134,8 @@ def main():
         sim = SimulationEnvironment(cameras, object_diameter, ground_truth_data, folder_prefix)
         st.session_state["simulation"] = sim
 
-    frame_idx = st.slider("Frame", 0, 1000, 0)
+    frame_idx = st.slider("Frame", 0, 7000, 0)
+    frame_idx = st.text_input("Frame", value=frame_idx)
 # Simulation controls
     sim: SimulationEnvironment = st.session_state["simulation"]
     detector: DetectionAlgorithm = st.session_state["detector"]
@@ -188,7 +191,7 @@ def main():
     st.subheader("CoTracker query points")
     st.write(st.session_state.get("viewport_points"))
     if st.button("Clear query points"):
-        st.session_state.update({"viewport_points": [{"x":503,"y":643,"width":1920,"height":1080,"unix_time":1732058105667,"camera":"camera1","frame_idx":183},{"x":491,"y":684,"width":1920,"height":1080,"unix_time":1732058114662,"camera":"camera2","frame_idx":183},{"x":279,"y":743,"width":1920,"height":1080,"unix_time":1732058128106,"camera":"camera3","frame_idx":183},{"x":451,"y":892,"width":1920,"height":1080,"unix_time":1732072682787,"camera":"camera2","frame_idx":16},{"x":238,"y":884,"width":1920,"height":1080,"unix_time":1732072703541,"camera":"camera1","frame_idx":18},{"x":237,"y":883,"width":1920,"height":1080,"unix_time":1732072715264,"camera":"camera1","frame_idx":20},{"x":235,"y":879,"width":1920,"height":1080,"unix_time":1732072727636,"camera":"camera1","frame_idx":22},{"x":499,"y":722,"width":1920,"height":1080,"unix_time":1732072754469,"camera":"camera3","frame_idx":135}]})
+        st.session_state.update({"viewport_points": []})
     st.subheader("3D Trajectory")
     data=[
             go.Scatter3d(
@@ -234,31 +237,38 @@ def main():
     # Advance simulation
     # sim.step()
     if st.button("Track"):
-        predictor = start_predictor()
 
         with torch.inference_mode(), torch.autocast(device.type, dtype=torch.bfloat16): # only works on modern gayvideo gpus
             query_points = st.session_state.get("viewport_points")
-            ann_frame_idx = sorted([point["frame_idx"] for point in query_points])
             ann_obj_id = 1  # give a unique id to each object we interact with (it can be any integers)
-            for frame_idx in ann_frame_idx:
-                points1 = [[point["x"], point["y"]] for point in query_points if point["camera"] == "camera1" and point["frame_idx"] == ann_frame_idx]
-                points2 = [[point["x"], point["y"]] for point in query_points if point["camera"] == "camera2" and point["frame_idx"] == ann_frame_idx]
-                points3 = [[point["x"], point["y"]] for point in query_points if point["camera"] == "camera3" and point["frame_idx"] == ann_frame_idx]
-                if len(points1) > 0:
-                    state1 = init_predictor_state(predictor, sim.rgb_filename("camera1"))
-                    add_keypoint(predictor, state1, ann_frame_idx, ann_obj_id, points1)
-                    st.session_state["video_segments1"] = propagate_on_video(predictor, state1, frame_idx, "camera1")
+            for camera_idx in range(1,4):
+                st.session_state[f"video_segments{camera_idx}"] = {}
+                # fused_filename is Seq0_camera1FL.mp4
+                # add another loop to iterate over _part1, _part2, _part3, _part4 .mp4 files
+                for part in ["_part1", "_part2", "_part3", "_part4"]:
+                    part_multiplier = int(part[-1])
+                    # need to get rid of .mp4 extension from fused filename and insert the _part
+                    fused_filename = sim.fused_filename(f"camera{camera_idx}")
+                    fused_filename = fused_filename[:-4] + part + ".mp4" 
+                    predictor = start_predictor()
+                    print("predictor init")
 
-                if len(points2) > 0:
-                    state2 = predictor.init_state(sim.rgb_filename("camera2"))
-                    add_keypoint(predictor, state2, ann_frame_idx, ann_obj_id, points2)
-                    st.session_state["video_segments2"] = propagate_on_video(predictor, state1, frame_idx, "camera2")
-                if len(points3) > 0:
-                    state3 = predictor.init_state(sim.rgb_filename("camera3"))
-                    add_keypoint(predictor, state3, ann_frame_idx, ann_obj_id, points3)
-                    st.session_state["video_segments3"] = propagate_on_video(predictor, state1, frame_idx, "camera3")
-    
-    video_segments = st.session_state.get("video_segments")
+                    state = init_predictor_state(predictor, sim.fused_filename(f"camera{camera_idx}"))
+                    print("predictor state for camera", camera_idx)
+                    points = [[point["x"], point["y"], int(point["frame_idx"])-(part_multiplier-1)*20*30] for point in query_points if point["camera"] == f"camera{camera_idx}"]
+
+                    for frame_i in [p[2] for p in points]:
+                        if len(points) > 0:
+                            add_keypoint(predictor, state, frame_i, ann_obj_id, [[p[0], p[1]] for p in points if p[2] == frame_i])
+                            segments: dict = st.session_state[f"video_segments{camera_idx}"]
+                            fragments = propagate_on_video(predictor, state, frame_i, f"camera{camera_idx}")
+                            fragments = {str(int(k) + (part_multiplier-1)*20*30): v for k, v in fragments.items()}
+                            segments.update(fragments)
+                            st.session_state[f"video_segments{camera_idx}"] = segments
+
+            
+        
+    video_segments = st.session_state.get("video_segments1")
     if video_segments is not None:
         fig, ax = plt.subplots()
         st.write(f"frame {frame_idx} (tracked)")
@@ -266,26 +276,39 @@ def main():
         for out_obj_id, out_mask in video_segments[frame_idx].items():
             show_mask(out_mask, ax, obj_id=out_obj_id, random_color=True)
         st.pyplot(fig)
-        out_mask = video_segments[frame_idx][1]
-        if np.sum(out_mask) > 0:
-            true_coords = [(y, x) for y in range(out_mask.shape[1]) for x in range(out_mask.shape[2]) if out_mask[0, y, x] == True]
 
-            # Step 1: Find the leftmost True value (smallest x value)
-            leftmost = min(true_coords, key=lambda coord: coord[1])[0]
+        for camera_idx in range(1,4):
+            tracked_frames = {}
+            video_segments = st.session_state.get(f"video_segments{camera_idx}")
+            for frame, out_masks in video_segments.items():
+                out_mask = out_masks[ann_obj_id]
+                if np.sum(out_mask) > 0:
+                    true_coords = [(y, x) for y in range(out_mask.shape[1]) for x in range(out_mask.shape[2]) if out_mask[0, y, x]]
 
-            # Step 2: Find the rightmost True value (largest x value)
-            rightmost = max(true_coords, key=lambda coord: coord[1])[0]
+                    # Step 1: Find the leftmost True value (smallest x value)
+                    leftmost = min(true_coords, key=lambda coord: coord[1])[0]
 
-            # Step 3: Find the topmost True value (smallest y value)
-            topmost = min(true_coords, key=lambda coord: coord[0])[1]
+                    # Step 2: Find the rightmost True value (largest x value)
+                    rightmost = max(true_coords, key=lambda coord: coord[1])[0]
 
-            # Step 4: Find the bottommost True value (largest y value)
-            bottommost = max(true_coords, key=lambda coord: coord[0])[1]
-            # mean center
-            center_x = (leftmost + rightmost) / 2
-            center_y = (topmost + bottommost) / 2
-            st.write(f"center: ({center_x}, {center_y})")
-    json.dump(st.session_state.viewport_points, open("viewport_points.json", "w"))
+                    # Step 3: Find the topmost True value (smallest y value)
+                    topmost = min(true_coords, key=lambda coord: coord[0])[1]
+
+                    # Step 4: Find the bottommost True value (largest y value)
+                    bottommost = max(true_coords, key=lambda coord: coord[0])[1]
+                    # mean center
+                    center_x = (leftmost + rightmost) / 2
+                    center_y = (topmost + bottommost) / 2
+                    st.write(f"center: ({center_x}, {center_y})")
+                    tracked_frames[frame] = {
+                        "center": (center_x, center_y),
+                        "leftmost": leftmost,
+                        "rightmost": rightmost,
+                        "topmost": topmost,
+                        "bottommost": bottommost
+                    }
+            json.dump(st.session_state.viewport_points, open("viewport_points.json", "w"))
+            json.dump(tracked_frames, open(f"tracked_frames{camera_idx}.json", "w"))
 
 @st.cache_data(ttl=3600)
 def propagate_on_video(_predictor, _state, frame_idx, camera_id):
@@ -317,7 +340,7 @@ def init_predictor_state(_predictor, filename: str):
 
 @st.cache_resource(ttl=3600)
 def start_predictor():
-    predictor = SAM2VideoPredictor.from_pretrained("facebook/sam2-hiera-large")
+    predictor = SAM2VideoPredictor.from_pretrained("facebook/sam2.1-hiera-small")
     return predictor
                 
 
