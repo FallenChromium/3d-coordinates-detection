@@ -38,6 +38,34 @@ class Triangulator:
         return np.mean(points, axis=0)
 
 
+class SingleCameraTriangulator:
+    def __init__(self, convertor: CameraWorldConvertor, object_diameter: float):
+        self.object_diameter = object_diameter
+        self.convertor = convertor
+
+    #list of opposite pairs of obj
+    def triangulate(self, points_pairs: list[tuple[np.ndarray, np.ndarray]]): 
+        positions = []
+        for point1, point2 in points_pairs:
+            if point1 is not None and point2 is not None:
+                line1 = self.convertor.transform_point_to_world_coord(point1)
+                line2 = self.convertor.transform_point_to_world_coord(point2)
+
+                vec1 = line1[0][:3]
+                vec2 = line2[0][:3]
+
+                norm_vec1 = vec1 / np.linalg.norm(vec1)
+                norm_vec2 = vec2 / np.linalg.norm(vec2)
+
+                dist = self.object_diameter / (np.linalg.norm(norm_vec1 - norm_vec2))
+
+                central_vector = (norm_vec1 + norm_vec2) 
+                norm_central_vector = central_vector / np.linalg.norm(central_vector)
+                
+                positions.append(line1[1] + dist * norm_central_vector)
+                
+        return np.mean(positions, axis=0)
+    
 
 
 if __name__ == "__main__":
